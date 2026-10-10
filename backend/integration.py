@@ -98,3 +98,27 @@ def api_predict():
 @bridge.get('/api/health')
 def health():
     return jsonify(status='ok',engine='python-grade-engine',authentication=True)
+
+
+def simulate_policy(data):
+    """Read-only simulator for full saved policies; no account/database writes."""
+    from validation import validate_policy
+    from grade_engine import final_maximum
+    if not isinstance(data,dict): raise ValueError('A policy and final score are required.')
+    policy=data.get('policy');validate_policy(policy)
+    score=number(data.get('score'),'Final score',high=final_maximum(policy))
+    result=calculate(policy)
+    if not policy.get('final_category'):raise ValueError('Choose a final category in course policies.')
+    averages={name:cat['average'] for name,cat in result['categories'].items()}
+    attendance=result['attendance']['average']
+    def project(value):
+        without=_grade_at_final(policy,averages,attendance,value,False)
+        with_rule=_grade_at_final(policy,averages,attendance,value,True)
+        valid=[v for v in (without,with_rule) if v is not None]
+        return {'score':value,'grade':max(valid) if valid else None,'without':without}
+    return {'result':result,'point':project(score),'curve':[project(round(i*final_maximum(policy)/20,4)) for i in range(21)]}
+
+@bridge.post('/api/simulate')
+def api_simulate():
+    try:return jsonify(simulate_policy(request.get_json(silent=True)))
+    except ValueError as error:return jsonify(error=str(error)),400

@@ -127,3 +127,9 @@ Under Best next steps, open **Make time for your next step**. Export remaining c
 Class times and study sessions use the device timezone and export as UTC; classes without a time and date-only deadlines are all-day reminders. Calendar exports never modify scores, attendance, or history. This is a snapshot export, not OAuth integration or synchronization: edits do not update imported events and repeated imports can create duplicates. No Google credentials are stored. `calendar-check.mjs` exercises this flow against a disposable database on port 5001.
 
 Calendar format reference: https://www.rfc-editor.org/rfc/rfc5545 ; Google import help: https://support.google.com/calendar/answer/37118
+
+## Signed-in what-if lab
+
+The account overview now includes a final-score projection chart, target selector using the course's cutoffs, score presets, switches for configured replacement/category-drop rules, a replacement comparison, category bars, reset, JSON export and up to three session-only scenario snapshots. Snapshots survive tab navigation but reset on course/revision change or refresh; exports preserve them outside the view. Gradebook and Course policies sidebar shortcuts open the complete policy editor.
+
+`POST /api/simulate` validates a full policy and returns 21 curve samples plus an exact selected point from the same engine used for final targets. The score represents the final category average after its own curves/drops. Other pending work remains ungraded; attendance stays recorded. The optional replacement branch is compared with the no-replacement grade so the better result wins. Preview calls do not write account data or history. The chart connects samples and does not imply exact interpolation at unsampled rule transitions. `lab-check.mjs` verifies sample calculations, snapshots, export, unchanged records and mobile accessibility using a disposable database on port 5001.
