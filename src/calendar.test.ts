@@ -1,0 +1,9 @@
+import {describe,it,expect} from 'vitest';
+import {calendarFile,datedEvent,googleLink,timedEvent,tomorrow,deadlines} from './calendar';
+import {fromCourse} from './policy';
+describe('calendar export',()=>{
+ it('uses exclusive all-day end dates across months and leap days',()=>{expect(tomorrow('2028-02-28')).toBe('2028-02-29');expect(tomorrow('2026-12-31')).toBe('2027-01-01');const e=datedEvent('test','Exam','2026-10-10');expect(new URL(googleLink(e)).searchParams.get('dates')).toBe('20261010/20261011');expect(calendarFile([e])).toContain('DTEND;VALUE=DATE:20261011\r\n')});
+ it('exports timed events as UTC instants with exact duration',()=>{const e=timedEvent('study','Study','2026-11-10T15:00',90);expect(new Date(e.end).getTime()-new Date(e.start).getTime()).toBe(5400000);expect(e.start).toMatch(/Z$/);expect(new URL(googleLink(e)).searchParams.get('dates')).toMatch(/^\d{8}T\d{6}Z\/\d{8}T\d{6}Z$/)});
+ it('escapes text, prevents line injection, and folds Unicode by bytes',()=>{const e=datedEvent('test','😀'.repeat(60)+',;\\\nBEGIN:VEVENT','2026-10-10');const text=calendarFile([e]);expect(text.match(/\r\nBEGIN:VEVENT/g)).toHaveLength(1);expect(text).toContain('\\,\\;\\\\\\nBEGIN:VEVENT');for(const line of text.split('\r\n'))expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75)});
+ it('exports only pending deadlines today or later without mutating scores',()=>{const p=fromCourse({id:'x',name:'Biology',code:'',categories:[]});p.categories=[{name:'Exams',kind:'exam',weight:100,bonus:false,drop_lowest:0,drop_min_scores:0,curve_above:null,curve_to:null,items:[{name:'Today',status:'pending',score:null,due_date:'2026-10-10'},{name:'Past',status:'pending',score:null,due_date:'2026-10-09'},{name:'Done',status:'scored',score:80,due_date:'2026-10-12'}]}];const before=JSON.stringify(p);expect(deadlines(p,1,'2026-10-10').map(e=>e.title)).toEqual(['Biology: Today due']);expect(JSON.stringify(p)).toBe(before)});
+});

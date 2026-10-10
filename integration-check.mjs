@@ -1,0 +1,36 @@
+import { chromium } from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({channel:'chrome',headless:true});
+const page=await browser.newPage({baseURL:process.env.CHECK_URL||'http://127.0.0.1:5173',viewport:{width:1440,height:1000}});const errors=[];
+page.on('pageerror',e=>errors.push(e.message));
+try {
+ await page.goto(process.env.CHECK_URL||'http://127.0.0.1:5173');
+ assert.equal((await (await page.request.get('/api/health')).json()).engine,'python-grade-engine');
+ const first=page.waitForResponse(r=>r.url().endsWith('/api/predict')&&r.status()===200);
+ await page.getByRole('button',{name:'Explore with sample data'}).click();
+ const data=await (await first).json();
+ assert.equal(data.source,'python-grade-engine');assert.equal(data.projected,87.7);
+ assert.equal(data.required,90.2);
+ await page.getByText('PYTHON ENGINE CONNECTED',{exact:true}).waitFor();
+ assert.ok(await page.getByRole('img',{name:/Projected grade by final exam score/}).isVisible());
+ const change=page.waitForResponse(r=>r.url().endsWith('/api/predict')&&r.request().postDataJSON().finalScore===98);
+ await page.getByRole('button',{name:'All in'}).click();
+ const changed=await(await change).json();assert.ok(Math.abs(changed.projected-93.55)<.000001);
+ await page.getByText('Target unlocked. You’ve got a path.').waitFor();
+ await page.route('**/api/predict',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Test service unavailable'})}));
+ await page.getByRole('button',{name:'Play it safe'}).click();
+ await page.getByRole('alert').filter({hasText:'Test service unavailable'}).waitFor();
+ assert.ok(await page.getByRole('button',{name:'Save this scenario'}).isDisabled());
+ await page.unroute('**/api/predict');
+ const recovery=page.waitForResponse(r=>r.url().endsWith('/api/predict')&&r.status()===200);
+ await page.getByRole('button',{name:'Retry connection'}).click();await recovery;
+ await page.getByText('PYTHON ENGINE CONNECTED',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Course policies',exact:true}).click();
+ await page.getByRole('button',{name:'Open full policy editor'}).click();
+ await page.getByRole('dialog').waitFor();
+ assert.equal(await page.locator('iframe').count(),0);
+ assert.equal((await page.request.get('/api/saved')).status(),410);
+ await page.getByRole('button',{name:'Close policy editor'}).click();
+ assert.deepEqual(errors,[]);
+ console.log('PASS: live Python predictions, targets, chart, service failure/retry, native policy editor, retired shared storage, no browser errors');
+} finally {await browser.close()}

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Syllabus What-If</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark">∑</span>
+        <span class="brand-name">Syllabus What-If</span>
+      </div>
+      <div class="topbar-actions">
+        <input id="course-name" class="course-name" placeholder="Course name" aria-label="Course name">
+        <button id="load-sample" class="btn btn-ghost" type="button">Load sample</button>
+        <button id="save-policy" class="btn btn-ghost" type="button">Save</button>
+        <select id="load-policy" class="select" aria-label="Load saved policy">
+          <option value="">Open saved…</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- RESULTS (hero: current grade + what-if row) -->
+    <section class="results" aria-live="polite">
+      <div class="hero">
+        <div class="hero-grade">
+          <div class="hero-grade-number" id="grade-pct">—</div>
+          <div class="hero-grade-letter" id="grade-letter">—</div>
+          <div class="hero-grade-caption" id="grade-caption">Enter a policy to begin</div>
+        </div>
+
+        <div class="whatif">
+          <div class="whatif-head">
+            <h2>What you need on the final</h2>
+            <div class="whatif-sub" id="whatif-sub">—</div>
+          </div>
+          <div class="whatif-grid" id="whatif-grid"></div>
+          <div class="whatif-foot">
+            <div class="best-possible">
+              <span class="label">Best still possible</span>
+              <span class="value" id="best-possible">—</span>
+            </div>
+            <div class="replacement-note" id="replacement-note"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="breakdown">
+        <div class="breakdown-head">
+          <h2>Rules that fired</h2>
+          <div class="breakdown-sub">Why the number is what it is</div>
+        </div>
+        <div class="breakdown-body" id="breakdown"></div>
+      </div>
+    </section>
+
+    <!-- POLICY EDITOR -->
+    <section class="editor">
+      <div class="editor-head">
+        <h2>Course policy</h2>
+        <button id="add-category" class="btn btn-ghost small" type="button">+ Category</button>
+      </div>
+
+      <div id="categories" class="categories"></div>
+
+      <div class="attendance-block">
+        <div class="attendance-head">
+          <h3>Attendance</h3>
+          <div class="attendance-controls">
+            <label>Weight <input type="number" id="att-weight" min="0" max="100" step="0.5" class="num"></label>
+            <label>Drop lowest <input type="number" id="att-drop" min="0" max="1" step="0.01" class="num"> of marks</label>
+          </div>
+        </div>
+        <div class="attendance-marks">
+          <div class="attendance-counts">
+            <label>Present <input type="number" id="att-present" min="0" step="1" class="num"></label>
+            <label>Late <input type="number" id="att-late" min="0" step="1" class="num"></label>
+            <label>Absent <input type="number" id="att-absent" min="0" step="1" class="num"></label>
+          </div>
+          <div class="attendance-summary" id="att-summary"></div>
+        </div>
+      </div>
+
+      <div class="cutoffs-block">
+        <h3>Letter cutoffs</h3>
+        <div class="cutoffs" id="cutoffs"></div>
+      </div>
+
+      <div class="final-rules-block">
+        <h3>Final-exam rules</h3>
+        <div class="final-rules">
+          <label>
+            Final category
+            <select id="final-category" class="select"></select>
+          </label>
+          <label>
+            Replaces lowest in
+            <select id="final-replaces" class="select"></select>
+          </label>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Templates (cloned by JS) -->
+  <template id="t-category">
+    <div class="category" data-cat>
+      <div class="category-head">
+        <input class="cat-name" placeholder="Category name" aria-label="Category name">
+        <label class="weight-field">
+          <span>Weight</span>
+          <input type="number" class="cat-weight num" min="0" max="100" step="0.5">
+          <span>%</span>
+        </label>
+        <button class="btn btn-link cat-remove" type="button" aria-label="Remove category">Remove</button>
+      </div>
+
+      <div class="category-rules">
+        <label>
+          Drop lowest
+          <input type="number" class="cat-drop num" min="0" step="1">
+        </label>
+        <label>
+          after
+          <input type="number" class="cat-dropmin num" min="0" step="1">
+          scores
+        </label>
+        <label>
+          Curve scores above
+          <input type="number" class="cat-curveabove num small" min="0" max="100" step="0.1">
+          to
+          <input type="number" class="cat-curveto num small" min="0" max="100" step="0.1">
+        </label>
+      </div>
+
+      <table class="items">
+        <thead>
+          <tr>
+            <th class="item-name-col">Item</th>
+            <th class="item-score-col">Score</th>
+            <th class="item-status-col">Status</th>
+            <th class="item-action-col"></th>
+          </tr>
+        </thead>
+        <tbody class="items-body"></tbody>
+      </table>
+      <button class="btn btn-link add-item" type="button">+ Add item</button>
+    </div>
+  </template>
+
+  <template id="t-item">
+    <tr class="item">
+      <td><input class="item-name" placeholder="Item name" aria-label="Item name"></td>
+      <td><input type="number" class="item-score num" min="0" max="150" step="0.1" placeholder="—"></td>
+      <td>
+        <select class="item-status select">
+          <option value="pending">Pending</option>
+          <option value="scored">Scored</option>
+          <option value="missing">Missing (counts as 0)</option>
+        </select>
+      </td>
+      <td><button class="btn btn-link item-remove" type="button" aria-label="Remove item">×</button></td>
+    </tr>
+  </template>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

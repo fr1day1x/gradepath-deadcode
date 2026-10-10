@@ -1,0 +1,36 @@
+import { chromium } from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({headless:true,channel:'chrome'});
+try {
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const email=`browser-${Date.now()}@example.com`;
+ await page.goto(process.env.CHECK_URL||'http://127.0.0.1:5173');
+ await page.getByRole('button',{name:'Create account',exact:true}).click();
+ await page.getByLabel('Your name',{exact:true}).fill('QA Student');
+ await page.getByLabel('Email address').fill(email);
+ await page.getByLabel('Password',{exact:true}).fill('test-password-only');
+ await page.getByRole('button',{name:'Create my account'}).click();
+ await page.getByText('Signed in as QA Student',{exact:true}).waitFor();
+ await page.reload();
+ await page.getByText('Signed in as QA Student',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Sign out',exact:true}).click();
+ await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.getByLabel('Email address').fill(email);
+ await page.getByLabel('Password',{exact:true}).fill('wrong-password');
+ await page.getByRole('button',{name:'Sign in to Gradepath'}).click();
+ await page.getByRole('alert').filter({hasText:'wasn’t recognized'}).waitFor();
+ await page.getByLabel('Password',{exact:true}).fill('test-password-only');
+ await page.getByRole('button',{name:'Sign in to Gradepath'}).click();
+ await page.getByText('Signed in as QA Student',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Sign out',exact:true}).click();
+ await page.getByRole('button',{name:'Create account',exact:true}).click();
+ await page.setViewportSize({width:390,height:844});
+ await page.waitForTimeout(700);
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await page.screenshot({path:'landing-mobile.png',fullPage:true});
+ await page.getByRole('button',{name:'Explore with sample data'}).click();
+ await page.getByText('Guest session · Sample data',{exact:true}).waitFor();
+ assert.deepEqual(errors,[]);
+ console.log('PASS: registration, persisted session, logout, rejected password, login, mobile layout, guest access');
+} finally {await browser.close()}

@@ -1,0 +1,48 @@
+GRADEPATH - REFERENCES AND DEVELOPMENT ASSISTANCE
+Team DeadCode | Knox College
+Kamlesh Kumar, Mohsin Asad, Eeman Naveed
+
+CONTEST
+CCSC:MW 2026 Hackathon: Syllabus What-If problem statement (Problem_Statement_2026.pdf).
+Competition policies and submission requirements:
+https://docs.google.com/document/d/1I9GtgXngvrHfMOZL9hwCby0S6_BqTPTC/edit
+
+AI ASSISTANCE
+OpenAI ChatGPT / Codex assisted with frontend and backend integration, account
+storage, grade history, planning, calendar export, debugging, tests, comments,
+and submission documentation. Generated changes were checked using automated
+tests and browser workflows. AI assistance is disclosed rather than attributed
+to a human teammate's commit history.
+The initial backend was supplied by a teammate as Claude_Backend_part1.zip.
+The filename is recorded as provenance; teammates should confirm any additional
+Claude or other AI usage before final submission.
+
+LIBRARIES AND DOCUMENTATION
+React: https://react.dev/
+TypeScript: https://www.typescriptlang.org/
+Vite: https://vite.dev/
+Tailwind CSS: https://tailwindcss.com/
+Motion: https://motion.dev/
+Three.js: https://threejs.org/
+Lucide icons: https://lucide.dev/
+Flask: https://flask.palletsprojects.com/
+Werkzeug (password hashing): https://werkzeug.palletsprojects.com/
+Python SQLite: https://docs.python.org/3/library/sqlite3.html
+Vitest: https://vitest.dev/
+Playwright: https://playwright.dev/
+Exact JavaScript dependencies are recorded in package-lock.json; Python dependencies
+are recorded in backend/requirements.txt. Dependencies retain their own licenses.
+
+CALENDAR FORMAT AND LINKS
+RFC 5545 (iCalendar): https://www.rfc-editor.org/rfc/rfc5545
+Google Calendar import help: https://support.google.com/calendar/answer/37118
+Google Calendar event links: https://calendar.google.com/calendar/render
+
+VISUAL REFERENCES
+The BMO-inspired companion is based on Adventure Time and a calculator-character
+reference image supplied by the team. It is implemented with local Three.js
+geometry; no official character model was downloaded. Character/reference rights
+belong to their respective owners. A team-provided animation reference video
+informed the interface motion. Its original creator was not identified in the
+provided material. The team should supplement this file with any sources or tools
+used outside this development conversation.
