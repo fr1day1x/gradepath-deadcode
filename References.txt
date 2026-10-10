@@ -13,9 +13,7 @@ storage, grade history, planning, calendar export, debugging, tests, comments,
 and submission documentation. Generated changes were checked using automated
 tests and browser workflows. AI assistance is disclosed rather than attributed
 to a human teammate's commit history.
-The initial backend was supplied by a teammate as Claude_Backend_part1.zip.
-The filename is recorded as provenance; teammates should confirm any additional
-Claude or other AI usage before final submission.
+
 
 LIBRARIES AND DOCUMENTATION
 React: https://react.dev/
